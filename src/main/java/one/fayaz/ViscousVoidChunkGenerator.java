@@ -61,13 +61,13 @@ public class ViscousVoidChunkGenerator extends ChunkGenerator {
     public CompletableFuture<Chunk> populateNoise(Blender blender, NoiseConfig noiseConfig,
                                                   StructureAccessor structureAccessor, Chunk chunk) {
         return CompletableFuture.supplyAsync(() -> {
-            BlockState water = Blocks.WATER.getDefaultState();
+            BlockState fog = ModFluids.VOID_BLOCK.getDefaultState();
 
             // Fill entire chunk with water
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
                     for (int y = chunk.getBottomY(); y < chunk.getTopSectionCoord() * 16; y++) {
-                        chunk.setBlockState(new BlockPos(x, y, z), water);
+                        chunk.setBlockState(new BlockPos(x, y, z), fog);
                     }
                 }
             }
@@ -75,6 +75,7 @@ public class ViscousVoidChunkGenerator extends ChunkGenerator {
             return chunk;
         });
     }
+
 
     @Override
     public int getSeaLevel() {

@@ -58,7 +58,6 @@ public class VoidFluid extends FlowableFluid {
         }
     }
 
-
     public void onEntityCollision(FluidState state, World world, BlockPos pos, Entity entity) {
         if (entity instanceof LivingEntity living) {
             Vec3d vel = entity.getVelocity();
