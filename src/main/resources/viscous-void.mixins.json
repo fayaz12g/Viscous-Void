@@ -5,6 +5,7 @@
 	"mixins": [
 		"ChunkGeneratorMixin"
 	],
+    "client": [],
 	"injectors": {
 		"defaultRequire": 1
 	},

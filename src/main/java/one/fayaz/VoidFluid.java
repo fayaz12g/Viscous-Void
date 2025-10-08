@@ -135,8 +135,7 @@ public class VoidFluid extends FlowableFluid {
 
     @Override
     public boolean isIn(TagKey<Fluid> tag) {
-        // Treat this as both water and swimmable so player movement behaves like swimming
-        return tag.equals(FluidTags.WATER) || tag.id().getPath().contains("swimmable");
+        return tag.id().getNamespace().equals(ViscousVoid.MOD_ID) && tag.id().getPath().contains("void");
     }
 
     @Override
