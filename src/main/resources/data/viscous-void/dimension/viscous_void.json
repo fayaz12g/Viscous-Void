@@ -1,0 +1,10 @@
+{
+  "type": "viscous-void:viscous_void",
+  "generator": {
+    "type": "viscous-void:viscous_void",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "minecraft:plains"
+    }
+  }
+}
