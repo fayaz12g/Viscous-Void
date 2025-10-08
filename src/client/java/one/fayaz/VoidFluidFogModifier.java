@@ -8,11 +8,8 @@ import net.minecraft.client.render.fog.FogData;
 import net.minecraft.client.render.fog.WaterFogModifier;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.Util;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ColorHelper;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.biome.Biome;
 import org.jetbrains.annotations.Nullable;
 
 public class VoidFluidFogModifier extends WaterFogModifier {
@@ -31,16 +28,24 @@ public class VoidFluidFogModifier extends WaterFogModifier {
             hasLogged = true;
         }
 
-        // Similar to water fog but customizable
+        // Default fog
         data.environmentalStart = -8.0F;
-        data.environmentalEnd = 196.0F;
+        data.environmentalEnd = 96.0F;
 
-        if (cameraEntity instanceof ClientPlayerEntity clientPlayerEntity) {
-            data.environmentalEnd = data.environmentalEnd * Math.max(0.25F, clientPlayerEntity.getUnderwaterVisibility());
+        if (cameraEntity instanceof ClientPlayerEntity player) {
+            // Detect if player is in your custom fluid
+            FluidState fluidState = cameraEntity.getEntityWorld().getFluidState(cameraEntity.getBlockPos());
+            if (fluidState.getFluid() == VoidModFluids.VOID || fluidState.getFluid() == VoidModFluids.FLOWING_VOID) {
+                // Almost no fog
+                data.environmentalStart = 0.0F;
+                data.environmentalEnd = 100000.0F; // Very far away, effectively full render distance
+                data.skyEnd = data.environmentalEnd;
+                data.cloudEnd = data.environmentalEnd;
+            } else {
+                // Keep water-like behavior for other fluids
+                data.environmentalEnd *= Math.max(0.25F, player.getUnderwaterVisibility());
+            }
         }
-
-        data.skyEnd = data.environmentalEnd;
-        data.cloudEnd = data.environmentalEnd;
     }
 
     @Override
@@ -54,26 +59,15 @@ public class VoidFluidFogModifier extends WaterFogModifier {
 
     @Override
     public int getFogColor(ClientWorld world, Camera camera, int viewDistance, float skyDarkness) {
-        System.out.println("VoidFluidFogModifier.getFogColor called! Returning RED");
-
-        long l = Util.getMeasuringTimeMs();
-        int i = ((Biome)world.getBiome(camera.getBlockPos()).value()).getWaterFogColor();
-        if (updateTime < 0L) {
-            waterFogColor = i;
-            lerpedWaterFogColor = i;
-            updateTime = l;
+        if (camera.getFocusedEntity() instanceof ClientPlayerEntity player) {
+            FluidState fluidState = player.getEntityWorld().getFluidState(player.getBlockPos());
+            if (fluidState.getFluid() == VoidModFluids.VOID || fluidState.getFluid() == VoidModFluids.FLOWING_VOID) {
+                // Very slight gray tint
+                return 0x202020;
+            }
         }
-
-        float f = MathHelper.clamp((float)(l - updateTime) / 5000.0F, 0.0F, 1.0F);
-        int j = ColorHelper.lerp(f, lerpedWaterFogColor, waterFogColor);
-        if (waterFogColor != i) {
-            waterFogColor = i;
-            lerpedWaterFogColor = j;
-            updateTime = l;
-        }
-
-        // Force red for testing
-        return 0xFF0000;
+        // Default water fog
+        return super.getFogColor(world, camera, viewDistance, skyDarkness);
     }
 
     @Override

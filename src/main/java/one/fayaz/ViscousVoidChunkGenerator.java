@@ -38,7 +38,7 @@ public class ViscousVoidChunkGenerator extends ChunkGenerator {
     public CompletableFuture<Chunk> populateNoise(Blender blender, NoiseConfig noiseConfig,
                                                   StructureAccessor structureAccessor, Chunk chunk) {
         return CompletableFuture.supplyAsync(() -> {
-            BlockState fog = ModFluids.VOID_BLOCK.getDefaultState();
+            BlockState fog = VoidModFluids.VOID_BLOCK.getDefaultState();
             BlockState water = Blocks.WATER.getDefaultState();
 
             // Fill entire chunk with fog

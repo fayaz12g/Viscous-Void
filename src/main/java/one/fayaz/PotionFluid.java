@@ -9,6 +9,7 @@ import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.Item;
+import net.minecraft.potion.Potion;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -25,7 +26,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
-public class VoidFluid extends FlowableFluid {
+public class PotionFluid extends FlowableFluid {
 
     @Override
     public Fluid getFlowing() {
@@ -143,7 +144,11 @@ public class VoidFluid extends FlowableFluid {
     }
 
     // Flowing state
-    public static class Flowing extends VoidFluid {
+    public static class Flowing extends PotionFluid {
+        public Flowing(Potion potion) {
+            super();
+        }
+
         @Override
         protected void appendProperties(StateManager.Builder<Fluid, FluidState> builder) {
             super.appendProperties(builder);
@@ -162,7 +167,11 @@ public class VoidFluid extends FlowableFluid {
     }
 
     // Still state
-    public static class Still extends VoidFluid {
+    public static class Still extends PotionFluid {
+        public Still(Potion potion) {
+            super();
+        }
+
         @Override
         public int getLevel(FluidState state) {
             return 8;
