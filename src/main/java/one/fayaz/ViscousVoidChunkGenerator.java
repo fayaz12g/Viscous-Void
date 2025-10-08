@@ -5,6 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.util.math.random.RandomSplitter;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.Heightmap;
@@ -33,37 +35,13 @@ public class ViscousVoidChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    protected MapCodec<? extends ChunkGenerator> getCodec() {
-        return CODEC;
-    }
-
-    @Override
-    public void carve(ChunkRegion chunkRegion, long seed, NoiseConfig noiseConfig, BiomeAccess biomeAccess, StructureAccessor structureAccessor, Chunk chunk) {
-
-    }
-
-    @Override
-    public void buildSurface(ChunkRegion region, StructureAccessor structures, NoiseConfig noiseConfig, Chunk chunk) {
-        // No surface building needed
-    }
-
-    @Override
-    public void populateEntities(ChunkRegion region) {
-        // No entities for now
-    }
-
-    @Override
-    public int getWorldHeight() {
-        return 384;
-    }
-
-    @Override
     public CompletableFuture<Chunk> populateNoise(Blender blender, NoiseConfig noiseConfig,
                                                   StructureAccessor structureAccessor, Chunk chunk) {
         return CompletableFuture.supplyAsync(() -> {
             BlockState fog = ModFluids.VOID_BLOCK.getDefaultState();
+            BlockState water = Blocks.WATER.getDefaultState();
 
-            // Fill entire chunk with water
+            // Fill entire chunk with fog
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
                     for (int y = chunk.getBottomY(); y < chunk.getTopSectionCoord() * 16; y++) {
@@ -74,6 +52,127 @@ public class ViscousVoidChunkGenerator extends ChunkGenerator {
 
             return chunk;
         });
+    }
+
+    net.minecraft.util.math.random.Random random1 = new net.minecraft.util.math.random.Random() {
+        @Override
+        public Random split() {
+            return null;
+        }
+
+        @Override
+        public RandomSplitter nextSplitter() {
+            return null;
+        }
+
+        @Override
+        public void setSeed(long seed) {
+
+        }
+
+        @Override
+        public int nextInt() {
+            return 0;
+        }
+
+        @Override
+        public int nextInt(int bound) {
+            return 0;
+        }
+
+        @Override
+        public long nextLong() {
+            return 0;
+        }
+
+        @Override
+        public boolean nextBoolean() {
+            return false;
+        }
+
+        @Override
+        public float nextFloat() {
+            return 0;
+        }
+
+        @Override
+        public double nextDouble() {
+            return 0;
+        }
+
+        @Override
+        public double nextGaussian() {
+            return 0;
+        }
+    };
+
+    @Override
+    public void buildSurface(ChunkRegion region, StructureAccessor structures, NoiseConfig noiseConfig, Chunk chunk) {
+        // Place End Cities during surface building phase
+        long seed = chunk.getPos().toLong();
+        java.util.Random random = new java.util.Random(seed);
+
+        // 5% chance per chunk to place an End City
+        if (random.nextFloat() < 0.05f) {
+            int cityX = chunk.getPos().getStartX() + 8;
+            int cityZ = chunk.getPos().getStartZ() + 8;
+            int cityY = 50 + random.nextInt(80); // Y between 50-130
+
+            BlockPos cityPos = new BlockPos(cityX, cityY, cityZ);
+
+            // Try to place the End City structure (no platform needed)
+            try {
+                net.minecraft.structure.StructureTemplateManager templateManager =
+                        region.toServerWorld().getStructureTemplateManager();
+
+                // Get a random End City piece
+                String[] endCityPieces = {
+                        "end_city/base_floor",
+                        "end_city/base_roof",
+                        "end_city/tower_base",
+                        "end_city/tower_piece",
+                        "end_city/tower_top"
+                };
+
+                String pieceName = endCityPieces[random.nextInt(endCityPieces.length)];
+                net.minecraft.util.Identifier structureId = net.minecraft.util.Identifier.of("minecraft", pieceName);
+
+                var template = templateManager.getTemplateOrBlank(structureId);
+
+                if (template != null) {
+                    net.minecraft.structure.StructurePlacementData placementData =
+                            new net.minecraft.structure.StructurePlacementData()
+                                    .setRotation(net.minecraft.util.BlockRotation.values()[random.nextInt(4)])
+                                    .setMirror(net.minecraft.util.BlockMirror.NONE)
+                                    .setIgnoreEntities(false);
+
+                    // Use flag 2 to place blocks without updates, allowing placement in liquid
+                    template.place(region, cityPos, cityPos, placementData, random1, 2);
+                }
+            } catch (Exception e) {
+                // Structure placement failed, continue without it
+            }
+        }
+    }
+
+    @Override
+    protected MapCodec<? extends ChunkGenerator> getCodec() {
+        return CODEC;
+    }
+
+    @Override
+    public void carve(ChunkRegion chunkRegion, long seed, NoiseConfig noiseConfig, BiomeAccess biomeAccess, StructureAccessor structureAccessor, Chunk chunk) {
+
+    }
+
+    @Override
+    public void populateEntities(ChunkRegion region) {
+        // No entities for now
+    }
+
+    @Override
+    public int getWorldHeight() {
+        return 384;
     }
 
 

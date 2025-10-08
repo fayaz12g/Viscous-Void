@@ -162,7 +162,7 @@ public class ViscousVoidPortalHandler {
                     Vec3d.ZERO,
                     player.getYaw(),
                     player.getPitch(),
-                    TeleportTarget.NO_OP
+                    TeleportTarget.SEND_TRAVEL_THROUGH_PORTAL_PACKET
             );
             player.teleportTo(teleportTarget);
             player.playSound(SoundEvents.BLOCK_BEACON_ACTIVATE, 1.0F, 1.0F);
