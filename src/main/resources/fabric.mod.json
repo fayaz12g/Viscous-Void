@@ -18,9 +18,7 @@
 		"main": [
 			"one.fayaz.ViscousVoid"
 		],
-      "client": [
-        "one.fayaz.ViscousVoidClient"
-      ]
+      "client": []
 	},
 	"depends": {
 		"fabricloader": ">=0.17.2",
