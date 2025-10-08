@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"id": "viscous-void",
+	"id": "viscous_void",
 	"version": "${version}",
 	"name": "Viscous Void",
 	"description": "Adds a dimension filled with viscous, breathable fog",
@@ -12,13 +12,15 @@
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/viscous-void/icon.png",
+	"icon": "assets/viscous_void/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
 			"one.fayaz.ViscousVoid"
 		],
-      "client": []
+      "client": [
+        "one.fayaz.ViscousVoidClient"
+      ]
 	},
 	"depends": {
 		"fabricloader": ">=0.17.2",

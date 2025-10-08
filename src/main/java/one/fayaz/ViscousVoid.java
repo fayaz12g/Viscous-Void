@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ViscousVoid implements ModInitializer {
-    public static final String MOD_ID = "viscous-void";
+    public static final String MOD_ID = "viscous_void";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     // Dimension registry key

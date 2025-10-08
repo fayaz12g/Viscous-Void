@@ -9,6 +9,8 @@ import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.Item;
+import net.minecraft.registry.tag.FluidTags;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -25,6 +27,7 @@ import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
 public class VoidFluid extends FlowableFluid {
+
     @Override
     public Fluid getFlowing() {
         return ModFluids.FLOWING_VOID;
@@ -42,30 +45,41 @@ public class VoidFluid extends FlowableFluid {
 
     @Override
     public void randomDisplayTick(World world, BlockPos pos, FluidState state, Random random) {
-        // Minimal particles for almost invisible effect
-        if (!state.isStill() && random.nextInt(200) == 0) {
-            world.playSoundClient((double)pos.getX() + 0.5, (double)pos.getY() + 0.5,
-                    (double)pos.getZ() + 0.5, SoundEvents.BLOCK_WATER_AMBIENT,
-                    SoundCategory.BLOCKS, random.nextFloat() * 0.1F + 0.1F,
-                    random.nextFloat() * 0.5F + 0.5F, false);
+        // soft ambient fog sound rarely
+        if (!state.isStill() && random.nextInt(300) == 0) {
+            world.playSoundClient(
+                    pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                    SoundEvents.BLOCK_WATER_AMBIENT,
+                    SoundCategory.BLOCKS,
+                    0.05F,
+                    0.8F + random.nextFloat() * 0.2F,
+                    false
+            );
         }
     }
 
+
     public void onEntityCollision(FluidState state, World world, BlockPos pos, Entity entity) {
-        // Make entities swim faster and prevent falling
-        if (entity instanceof LivingEntity) {
-            Vec3d velocity = entity.getVelocity();
+        if (entity instanceof LivingEntity living) {
+            Vec3d vel = entity.getVelocity();
 
-            // Increase horizontal movement speed
-            double speedMultiplier = 1.5;
-            entity.setVelocity(
-                    velocity.x * speedMultiplier,
-                    Math.max(velocity.y, 0.0), // Prevent falling - don't let Y velocity go negative
-                    velocity.z * speedMultiplier
-            );
+            // Buoyant effect — prevents sinking
+            double buoyancy = 0.04;
+            double newY = vel.y + buoyancy;
 
-            // Reduce fall distance since we're preventing falling
+            // Keep Y stable if trying to float still
+            if (Math.abs(vel.y) < 0.02) newY = 0.0;
+
+            // Faster swim speed horizontally
+            double multiplier = 1.6;
+            Vec3d newVel = new Vec3d(vel.x * multiplier, newY, vel.z * multiplier);
+            entity.setVelocity(newVel);
+
+            // Reset fall distance to avoid fall damage
             entity.fallDistance = 0.0F;
+
+            // Enable swimming animation if in this fluid
+            living.setSwimming(true);
         }
     }
 
@@ -77,7 +91,7 @@ public class VoidFluid extends FlowableFluid {
 
     @Override
     protected int getMaxFlowDistance(WorldView world) {
-        return 3;
+        return 2;
     }
 
     @Override
@@ -97,7 +111,7 @@ public class VoidFluid extends FlowableFluid {
 
     @Override
     public int getTickRate(WorldView world) {
-        return 20;
+        return 15;
     }
 
     @Override
@@ -112,7 +126,7 @@ public class VoidFluid extends FlowableFluid {
 
     @Override
     public boolean isStill(FluidState state) {
-        return false;
+        return this instanceof Still;
     }
 
     @Override
@@ -121,10 +135,17 @@ public class VoidFluid extends FlowableFluid {
     }
 
     @Override
+    public boolean isIn(TagKey<Fluid> tag) {
+        // Treat this as both water and swimmable so player movement behaves like swimming
+        return tag.equals(FluidTags.WATER) || tag.id().getPath().contains("swimmable");
+    }
+
+    @Override
     public int getLevel(FluidState state) {
         return 0;
     }
 
+    // Flowing state
     public static class Flowing extends VoidFluid {
         @Override
         protected void appendProperties(StateManager.Builder<Fluid, FluidState> builder) {
@@ -143,6 +164,7 @@ public class VoidFluid extends FlowableFluid {
         }
     }
 
+    // Still state
     public static class Still extends VoidFluid {
         @Override
         public int getLevel(FluidState state) {

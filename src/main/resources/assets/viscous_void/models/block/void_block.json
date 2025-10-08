@@ -1,0 +1,9 @@
+{
+  "parent": "block/liquid",
+  "textures": {
+    "particle": "viscous_void:block/void_still",
+    "still": "viscous_void:block/void_still",
+    "flow": "viscous_void:block/void_flow"
+  },
+  "render_type": "translucent"
+}
