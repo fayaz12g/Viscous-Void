@@ -15,36 +15,31 @@ import net.minecraft.util.Identifier;
 
 public class ModBlocks {
 
-    public static final Block TEST_BLOCK = register(
-            new Block(AbstractBlock.Settings.copy(Blocks.STONE)),
+    public static final Block TEST_BLOCK = registerBlock(
             "test_block",
-            false
+            AbstractBlock.Settings.create()
         );
 
-    private static Block register(Block block, String name, Boolean shouldRegisterItem) {
-        Identifier id = Identifier.of(ViscousVoid.MOD_ID, name);
-        RegistryKey<Block> key = RegistryKey.of(RegistryKeys.BLOCK, id);
-        Block.Settings settings = Block.Settings.copy(Blocks.COBBLESTONE).registryKey(key);
 
-        if (shouldRegisterItem) {
-            Item blockItem = register(
-                new Item.Settings(),
-                "test_item"
-            );
-        }
-
-        return Registry.register(Registries.BLOCK, key, new Block(settings));
+    private static Block registerBlock(String name, AbstractBlock.Settings blockSettings) {
+        RegistryKey<Block> key = RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(ViscousVoid.MOD_ID, name));
+        Block block = new Block(blockSettings.registryKey(key));
+        registerVoidBlockItem(name, block);
+        return Registry.register(Registries.BLOCK, key, block);
     }
 
-    private static Item register(Item.Settings itemSettings, String name) {
-        Identifier id = Identifier.of(ViscousVoid.MOD_ID, name);
-        RegistryKey<Item> key = RegistryKey.of(RegistryKeys.ITEM, id);
-        Item.Settings settings = new Item.Settings()
-                .useBlockPrefixedTranslationKey()
-                .registryKey(key);
-
-        return Registry.register(Registries.ITEM, key, new Item(settings));
+    private static void registerVoidBlockItem(String name, Block block) {
+        RegistryKey<Item> key = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(ViscousVoid.MOD_ID, name));
+        BlockItem item = new VoidBlockItem(block, new Item.Settings().registryKey(key));
+        Registry.register(Registries.ITEM, key, item);
     }
+
+    private static void registerBlockItem(String name, Block block) {
+        RegistryKey<Item> key = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(ViscousVoid.MOD_ID, name));
+        BlockItem item = new BlockItem(block, new Item.Settings().registryKey(key));
+        Registry.register(Registries.ITEM, key, item);
+    }
+
 
     public static void initialize() {}
 

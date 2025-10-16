@@ -51,7 +51,7 @@ public class ViscousVoid implements ModInitializer {
         ModItems.initialize();
 
         // Register blocks
-//        ModBlocks.initialize();
+        ModBlocks.initialize();
 
 
         LOGGER.info("Viscous Void dimension registered!");
